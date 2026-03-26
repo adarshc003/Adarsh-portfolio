@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Github, Linkedin, Phone, Send, MapPin, ArrowUpRight } from 'lucide-react';
 import { personalInfo } from '../data/portfolio';
+import emailjs from '@emailjs/browser';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
@@ -9,14 +10,33 @@ export default function Contact() {
   const [sending, setSending] = useState(false);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSending(true);
-    await new Promise(r => setTimeout(r, 1200));
-    setSending(false);
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setSending(true);
+
+  try {
+    await emailjs.send(
+   import.meta.env.VITE_EMAIL_SERVICE_ID,
+      import.meta.env.VITE_EMAIL_TEMPLATE_ID,
+      {
+        name: form.name,
+        email: form.email,
+        message: form.message
+      },
+      import.meta.env.VITE_EMAIL_PUBLIC_KEY
+    );
+
     setSent(true);
     setForm({ name: '', email: '', message: '' });
-  };
+
+  } catch (error) {
+    console.error(error);
+  }
+
+  setSending(false);
+};
 
   const contacts = [
     { icon: Mail, label: 'Email', value: personalInfo.email, href: `mailto:${personalInfo.email}` },
